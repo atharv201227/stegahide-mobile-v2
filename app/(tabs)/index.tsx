@@ -133,6 +133,7 @@ export default function HomeScreen() {
   const [message, setMessage] = useState<string | null>(null);
   const [capacityNotice, setCapacityNotice] = useState<CapacityNotice | null>(null);
   const [password, setPassword] = useState("");
+  const [outputName, setOutputName] = useState("stegahide-hidden-image");
   const [capacity, setCapacity] = useState<CapacityState>(null);
   const [capacityBusy, setCapacityBusy] = useState(false);
 
@@ -178,6 +179,7 @@ export default function HomeScreen() {
     setResultUri(null);
     setMessage(null);
     setCapacityNotice(null);
+    setOutputName(nextMode === "hide" ? "stegahide-hidden-image" : "stegahide-revealed-image");
   };
 
   const pickImage = async (target: PickTarget) => {
@@ -257,7 +259,7 @@ export default function HomeScreen() {
         const resized = fittingSecret.width !== normalized.width || fittingSecret.height !== normalized.height;
         setCapacityNotice({ text: `${resized ? "Secret image auto-fitted · " : "Capacity check passed · "}${formatBytes(fittingCapacity.remainingBytes)} remaining`, ok: true });
         const encoded = embedImage(normalized.base64, fittingEncrypted, ENCRYPTED_MIME_TYPE);
-        const uri = await writeImageBase64(encoded, "image/png");
+        const uri = await writeImageBase64(encoded, "image/png", outputName);
         setResultUri(uri);
         setMessage("Your carrier image now contains an encrypted secret image.");
         void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -268,7 +270,7 @@ export default function HomeScreen() {
         const decrypted = extracted.mimeType === ENCRYPTED_MIME_TYPE
           ? decryptPayload(extracted.base64, password)
           : extracted;
-        const uri = await writeImageBase64(decrypted.base64, decrypted.mimeType);
+        const uri = await writeImageBase64(decrypted.base64, decrypted.mimeType, outputName);
         setResultUri(uri);
         setMessage("Hidden image revealed successfully.");
         void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -318,6 +320,7 @@ export default function HomeScreen() {
     setCapacityNotice(null);
     setCapacity(null);
     setPassword("");
+    setOutputName(mode === "hide" ? "stegahide-hidden-image" : "stegahide-revealed-image");
   };
 
   return (
@@ -379,7 +382,7 @@ export default function HomeScreen() {
         <View style={styles.passwordCard}>
           <View style={styles.passwordIcon}><MaterialIcons name="lock-outline" size={19} color={COLORS.orange} /></View>
           <View style={styles.passwordCopy}>
-            <Text style={styles.passwordLabel}>{mode === "hide" ? "Encryption password" : "Decryption password"}</Text>
+            <Text style={styles.passwordLabel}>{mode === "hide" ? "Encryption password" : "Decryption password · local"}</Text>
             <TextInput
               value={password}
               onChangeText={(value) => { setPassword(value); setCapacityNotice(null); }}
@@ -393,6 +396,25 @@ export default function HomeScreen() {
           </View>
           <MaterialIcons name={password.length >= 4 ? "check-circle" : "vpn-key"} size={18} color={password.length >= 4 ? COLORS.green : COLORS.muted} />
         </View>
+
+        <View style={styles.filenameCard}>
+          <View style={styles.filenameIcon}><MaterialIcons name="drive-file-rename-outline" size={19} color={COLORS.cyan} /></View>
+          <View style={styles.filenameCopy}>
+            <Text style={styles.passwordLabel}>Output filename</Text>
+            <TextInput
+              value={outputName}
+              onChangeText={setOutputName}
+              placeholder="stegahide-result"
+              placeholderTextColor={COLORS.muted}
+              autoCapitalize="none"
+              autoCorrect={false}
+              style={styles.passwordInput}
+            />
+          </View>
+          <Text style={styles.filenameExtension}>{mode === "hide" ? ".png" : ".auto"}</Text>
+        </View>
+
+        {mode === "reveal" && <Text style={styles.decryptHint}>The hidden payload is decrypted on this device. Your password is never uploaded.</Text>}
 
         {mode === "hide" && carrierUri && secretUri && (
           <View style={styles.meterCard}>
@@ -514,6 +536,11 @@ const styles = StyleSheet.create({
   passwordCopy: { flex: 1 },
   passwordLabel: { color: COLORS.text, fontSize: 12, fontWeight: "800", marginBottom: 3 },
   passwordInput: { color: COLORS.text, fontSize: 12, padding: 0, minHeight: 22 },
+  filenameCard: { flexDirection: "row", alignItems: "center", gap: 10, marginTop: 10, padding: 12, borderRadius: 15, borderWidth: 1, borderColor: COLORS.border, backgroundColor: `${COLORS.surface}CC` },
+  filenameIcon: { width: 34, height: 34, borderRadius: 10, alignItems: "center", justifyContent: "center", backgroundColor: `${COLORS.cyan}18` },
+  filenameCopy: { flex: 1 },
+  filenameExtension: { color: COLORS.muted, fontSize: 11, fontWeight: "800" },
+  decryptHint: { color: COLORS.muted, fontSize: 10, lineHeight: 15, marginTop: 8, paddingHorizontal: 3 },
   meterCard: { marginTop: 11, padding: 13, borderRadius: 15, borderWidth: 1, borderColor: `${COLORS.cyan}35`, backgroundColor: `${COLORS.cyan}0A` },
   meterHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   meterTitle: { color: COLORS.text, fontSize: 12, fontWeight: "800" },

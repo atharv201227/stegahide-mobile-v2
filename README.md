@@ -1,6 +1,6 @@
-# StegaHide
+# StegaHide v2
 
-StegaHide is an offline-first graphical mobile app for hiding one image inside another image. It is built with Expo and React Native and provides a simple Hide/Reveal workflow with local processing, automatic payload fitting, live capacity feedback, and password-protected hidden images.
+StegaHide v2 is an offline-first graphical mobile app for hiding one image inside another image. It is built with Expo and React Native and provides a simple Hide/Reveal workflow with local processing, automatic payload fitting, live capacity feedback, password-protected hidden images, and customizable output filenames.
 
 ## Features
 
@@ -10,6 +10,8 @@ StegaHide is an offline-first graphical mobile app for hiding one image inside a
 - Live encrypted capacity meter showing payload usage and remaining carrier budget.
 - AES password encryption with integrity verification for hidden payloads.
 - Password-protected Reveal flow with incorrect-password detection.
+- Direct password-based decryption inside the app on the device.
+- Custom output filename field for generated hidden and revealed images.
 - Save generated images to the device photo library.
 - Share generated images through the native share sheet.
 - No image uploads or server-side image processing in the default workflow.
@@ -19,7 +21,7 @@ StegaHide is an offline-first graphical mobile app for hiding one image inside a
 
 The latest installable Android APK is available from the GitHub release page:
 
-[Download StegaHide Android APK v1.0.0](https://github.com/atharv201227/stegahide-mobile/releases/tag/v1.0.0)
+[Download StegaHide v2 Android APK](https://github.com/atharv201227/stegahide-mobile-v2/releases)
 
 The APK is built automatically by GitHub Actions from the workflow in `.github/workflows/android-apk.yml`.
 
@@ -32,7 +34,11 @@ The APK is built automatically by GitHub Actions from the workflow in `.github/w
 5. Review the live capacity meter. If the secret is too large, StegaHide automatically resizes and compresses it while preserving its aspect ratio.
 6. Tap **Create hidden image**.
 7. Save or share the generated carrier image.
-8. To reveal the image, select **Reveal**, choose the generated carrier, and enter the same password.
+8. To reveal the image, select **Reveal**, choose the generated carrier, enter the same password, choose an output filename, and tap **Reveal hidden image**. Decryption happens directly inside the app.
+
+### Custom filenames
+
+Use the **Output filename** field before creating or revealing an image. StegaHide removes unsafe characters and automatically applies the correct image extension. For example, entering `family-secret` creates a file such as `family-secret-<timestamp>.png` or the original decrypted image format.
 
 ## Tech stack
 
@@ -80,8 +86,8 @@ npx expo export --platform web
 Push a version tag beginning with `v` to trigger the GitHub Actions build workflow:
 
 ```bash
-git tag -a v1.0.1 -m "StegaHide Android APK 1.0.1"
-git push origin v1.0.1
+git tag -a v2.0.0 -m "StegaHide v2 Android APK 2.0.0"
+git push origin v2.0.0
 ```
 
 The workflow generates the Android project, builds the release APK, uploads it as a workflow artifact, and publishes it to a GitHub release. Manual builds can also be started from the **Actions** tab using `workflow_dispatch`.
